@@ -6,6 +6,7 @@ use Grav\Common\Form\FormFlash;
 use Grav\Common\Grav;
 use Grav\Common\Page\Page;
 use Grav\Common\Plugin;
+use Grav\Common\Utils;
 use RocketTheme\Toolbox\Event\Event;
 use RocketTheme\Toolbox\File\File;
 use RocketTheme\Toolbox\File\YamlFile;
@@ -219,21 +220,21 @@ class AddPageByFormPlugin extends Plugin
             return [
                 'onPluginsInitialized' => ['onPluginsInitialized', 0],
                 'onFormValidationProcessed' => ['onFormValidationProcessed', 0],
-                'onFormProcessed' => ['onFormProcessed', 0]
+                'onFormProcessed' => ['onFormProcessed', 0],
             ];
         } else {
             return [
                 'onPluginsInitialized' => ['onPluginsInitialized', 0],
                 'onFormUploadSettings' => ['onFormUploadSettings', 0],
-                'onFormProcessed' => ['onFormProcessed', 0]
+                'onFormProcessed' => ['onFormProcessed', 0],
             ];
         }
-        
+
     }
 
     /**
      * Build array of upload files and move file to destination
-     * 
+     *
      * @deprecated 2.3 For use with pre Grav version 1.6 only
      *
      * @param string $form_page_relative_page_path
@@ -325,6 +326,28 @@ class AddPageByFormPlugin extends Plugin
 
             $event['settings'] = (object) $settings;
 
+        }
+    }
+
+    /**
+     * Return value from page frontmatter
+     *
+     * To be used with the data-default@ form field option
+     * Nested variables must be requested in dot notation
+     *
+     * @param $key
+     *
+     */
+    public static function getFrontmatter($key)
+    {
+        $frontmatter = (array) Grav::instance()['page']->header();
+
+        if (isset($frontmatter['form']['name'])) {
+            if (explode('.', $frontmatter['form']['name'])[0] == 'addpage') {
+                $value = Utils::getDotNotation($frontmatter, $key);
+
+                return $value;
+            }
         }
     }
 
@@ -443,11 +466,11 @@ class AddPageByFormPlugin extends Plugin
                     }
 
                     // Here you can insert anything else into the new page frontmatter
-                    
+
                     /*
                     $result = 'Hello World';
                     $page_frontmatter['result'] = $result;
-                    */
+                     */
 
                     // If content is not included as a form value then fallback to config default
                     if (isset($page_frontmatter['content'])) {
@@ -689,7 +712,7 @@ class AddPageByFormPlugin extends Plugin
      * Process form after validation
      *
      * @deprecated 2.3 For use with pre Grav version 1.6 only
-     * 
+     *
      * @param $event
      *
      */
